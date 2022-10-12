@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fetch Data and Fill Modal</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  <style>
+    div.modal-content {
+      font-family: monospace;
+      white-space: pre;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="container">
+    <div class="row">
+      <div class="input-field col s6">
+        <select id="options">
+          <option value="" disabled selected>Choose your option</option>
+          <option value="1">Option 1</option>
+          <option value="2">Option 2</option>
+          <option value="3">Option 3</option>
+          <option value="a3b">Invalid Option</option>
+        </select>
+        <label>Materialize Select</label>
+        <div class="red-text text-darken-4"></div>
+      </div>
+      <div class="col s6">
+        <br>
+        <a id="modal-opener" class="waves-effect waves-light btn">Open</a>
+      </div>
+    </div>
+  </main>
+  <div class="modal">
+    <div class="modal-content">
+      <h4>Modal Header</h4>
+      <p>A bunch of text</p>
+    </div>
+    <div class="modal-footer">
+      <a href="#!" class="modal-close waves-effect waves-green btn-flat">Agree</a>
+    </div>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // define o elemento q que vai receber mensagens de erro
+      const errorsReceiver = document.querySelector('div.red-text')
+
+      // define a anchor que vai abrir a modal
+      const modalOpener = document.querySelector('a#modal-opener')
+      // escuta o evento click
+      modalOpener.addEventListener('click', async () => {
+        // define qual é o select
+        const selectValue = document.querySelector('select#options').value
+
+        // limpa o recebedor de mensagens de erro
+        errorsReceiver.innerHTML = ''
+
+        // se nenhuma opção foi escolhida
+        if (!selectValue) {
+          errorsReceiver.innerHTML = 'You must choose an option'
+          return
+        }
+
+        // busca os dados
+        const response = await fetch(`api/?id=${selectValue}`);
+
+        // verifica se a resposta foi um sucesso
+        if (response.status === 200) {
+          const data = await response.json();
+          openModalWithData(data)
+        } else if (response.status === 404) {
+          const error = await response.json();
+          errorsReceiver.innerHTML = error
+        }
+      })
+
+      const selects = document.querySelectorAll('select');
+      const instances = M.FormSelect.init(selects);
+      const modal = M.Modal.init(document.querySelector('.modal'));
+      const modalContent = modal.el.querySelector('.modal-content');
+
+      /**
+       * FUNÇÃO QUE VAI ABRIR A MODAL COM DETERMINADOS DADOS
+       */
+      const openModalWithData = (data) => {
+        // define o conteúdo da modal
+        modalContent.innerHTML = JSON.stringify({ data }, null, 2)
+        modal.open()
+      }
+    });
+
+  </script>
+</body>
+
+</html>
